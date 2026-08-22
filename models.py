@@ -32,6 +32,17 @@ class Trip(Base):
     
     owner = relationship("User", back_populates="trips")
     stops = relationship("Stop", back_populates="trip", cascade="all, delete-orphan", order_by="Stop.order_index")
+    collaborators = relationship("TripCollaborator", back_populates="trip", cascade="all, delete-orphan")
+
+class TripCollaborator(Base):
+    __tablename__ = "trip_collaborators"
+    id = Column(String, primary_key=True, index=True, default=generate_uuid)
+    trip_id = Column(String, ForeignKey("trips.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    role = Column(String, default="viewer") # 'editor' or 'viewer'
+    
+    trip = relationship("Trip", back_populates="collaborators")
+    user = relationship("User")
 
 class City(Base):
     __tablename__ = "cities"
