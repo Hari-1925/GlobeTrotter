@@ -4,7 +4,7 @@ import models
 from database import engine
 
 # Import routers
-from routers import auth, users, trips, search, itinerary, budget, sharing, admin
+from routers import auth, users, trips, search, itinerary, budget, sharing, admin, weather
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
@@ -31,6 +31,7 @@ app.include_router(itinerary.router)
 app.include_router(budget.router)
 app.include_router(sharing.router)
 app.include_router(admin.router)
+app.include_router(weather.router)
 
 # Serve static files
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

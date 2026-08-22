@@ -665,10 +665,17 @@ async function openTripDetails(tripId) {
         
         switchTab("trip-details");
         
-        // Reset subviews
+        // Initialize calendarDate or retain it if we're on the same trip
+        if (state.lastOpenedTripId !== tripId) {
+            state.calendarDate = new Date(state.currentTrip.start_date);
+            state.activeSubView = "itinerary";
+            state.lastOpenedTripId = tripId;
+        }
+        
+        // Update subviews visually based on current activeSubView
         document.querySelectorAll(".trip-sub-nav .sub-nav-btn").forEach(b => b.classList.remove("active"));
-        document.querySelector(".trip-sub-nav [data-subview='itinerary']").classList.add("active");
-        state.activeSubView = "itinerary";
+        const activeNav = document.querySelector(`.trip-sub-nav [data-subview='${state.activeSubView}']`);
+        if (activeNav) activeNav.classList.add("active");
         
         renderTripSubViews();
         
@@ -815,6 +822,9 @@ function renderItineraryBuilder() {
         });
         
         timelineContainer.appendChild(stopCard);
+        
+        // Fetch and inject weather widget
+        fetchStopWeather(stop.city.name, stopCard);
     });
     
     // Add Stop trigger inside timeline header
@@ -1872,4 +1882,32 @@ function debounce(func, delay) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), delay);
     };
+}
+
+// -------------------------------------------------------------
+// Weather Widget Integration
+// -------------------------------------------------------------
+async function fetchStopWeather(cityName, stopCardElement) {
+    try {
+        const response = await fetch(`${API_BASE}/weather/${cityName}`);
+        if (!response.ok) return; // Silent fail for weather
+        
+        const data = await response.json();
+        const weatherHtml = `
+            <div class="weather-widget">
+                <span class="weather-icon">${data.icon}</span>
+                <div class="weather-details">
+                    <span class="weather-temp">${data.temperature}°C</span>
+                    <span class="weather-cond">${data.condition}</span>
+                </div>
+            </div>
+        `;
+        
+        const headerInfo = stopCardElement.querySelector(".stop-card-info");
+        if (headerInfo) {
+            headerInfo.insertAdjacentHTML("afterend", weatherHtml);
+        }
+    } catch (err) {
+        console.warn("Weather fetch error:", err);
+    }
 }
