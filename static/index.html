@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlobeTrotter - Premium Travel Planner & Itinerary Builder</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- App Background Elements for Depth -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="auth-container">
+        <div class="auth-card glass">
+            <div class="auth-brand">
+                <i class="fa-solid fa-earth-americas brand-icon animate-spin-slow"></i>
+                <h1>GlobeTrotter</h1>
+                <p>Plan your journey in style</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <h2 class="auth-title">Welcome Back</h2>
+                <div class="form-group">
+                    <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="login-email" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <div class="form-actions">
+                    <a href="#" id="btn-forgot-password" class="forgot-link">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                <p class="auth-switch">New to GlobeTrotter? <a href="#" id="switch-to-signup">Create account</a></p>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="auth-form hidden">
+                <h2 class="auth-title">Create Account</h2>
+                <div class="form-group">
+                    <label for="signup-name"><i class="fa-solid fa-user"></i> Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="signup-email" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="signup-password" required minlength="6" placeholder="At least 6 characters">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                <p class="auth-switch">Already have an account? <a href="#" id="switch-to-login">Sign in</a></p>
+            </form>
+            
+            <!-- Forgot Password Mock Dialog -->
+            <div id="forgot-password-modal" class="auth-form hidden">
+                <h2 class="auth-title">Reset Password</h2>
+                <p class="dialog-text">Enter your email and we'll send password reset instructions.</p>
+                <div class="form-group">
+                    <label for="forgot-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="forgot-email" placeholder="name@example.com">
+                </div>
+                <button id="btn-submit-forgot" class="btn btn-primary btn-block">Send Reset Link</button>
+                <p class="auth-switch"><a href="#" id="forgot-back-to-login">Back to Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden when not authenticated) -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-earth-americas brand-icon"></i>
+                <span>GlobeTrotter</span>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#dashboard" class="menu-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+                </a>
+                <a href="#my-trips" class="menu-item" data-tab="my-trips">
+                    <i class="fa-solid fa-route"></i> <span>My Trips</span>
+                </a>
+                <a href="#discover" class="menu-item" data-tab="discover">
+                    <i class="fa-solid fa-compass"></i> <span>Discover</span>
+                </a>
+                <a href="#admin" id="nav-admin" class="menu-item" data-tab="admin">
+                    <i class="fa-solid fa-sliders"></i> <span>Admin Panel</span>
+                </a>
+                <a href="#profile" class="menu-item" data-tab="profile">
+                    <i class="fa-solid fa-user-gear"></i> <span>Profile Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-user" id="sidebar-user-block">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Avatar" id="user-avatar-img" class="user-avatar-small">
+                <div class="user-info">
+                    <span class="user-name" id="user-display-name">Guest User</span>
+                    <span class="user-email" id="user-display-email">guest@globetrotter.com</span>
+                </div>
+                <button id="btn-logout" class="btn-logout" title="Log Out">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Top Dashboard Bar -->
+            <header class="top-bar glass">
+                <div class="page-title-area">
+                    <h2 id="current-view-title">Dashboard</h2>
+                </div>
+                <div class="top-bar-actions">
+                    <button class="btn btn-primary" id="btn-new-trip-top"><i class="fa-solid fa-plus"></i> Plan New Trip</button>
+                </div>
+            </header>
+
+            <!-- Scrollable View Canvas -->
+            <div class="view-canvas">
+                
+                <!-- 1. DASHBOARD VIEW -->
+                <section id="view-dashboard" class="tab-view active">
+                    <div class="dashboard-welcome glass">
+                        <div class="welcome-text">
+                            <h1 id="welcome-message">Welcome back, Traveler!</h1>
+                            <p>Ready to discover new cultures, create memories, and outline your next escape? Let's check your current plans.</p>
+                        </div>
+                        <button class="btn btn-accent btn-lg" id="btn-new-trip-hero"><i class="fa-solid fa-map-location-dot"></i> Start Planning</button>
+                    </div>
+
+                    <!-- Statistics / Quick Budget Highlights -->
+                    <div class="stats-grid">
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fa-solid fa-plane-departure"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-value" id="stat-total-trips">0</span>
+                                <span class="stat-label">Total Trips Created</span>
+                            </div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-value" id="stat-total-budget">$0</span>
+                                <span class="stat-label">Estimated Budget Total</span>
+                            </div>
+                        </div>
+                        <div class="stat-card glass">
+                            <div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div>
+                            <div class="stat-details">
+                                <span class="stat-value" id="stat-total-stops">0</span>
+                                <span class="stat-label">Destinations Added</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Trips Section -->
+                    <div class="section-container">
+                        <div class="section-header">
+                            <h3><i class="fa-solid fa-route icon-margin"></i> Recent Trips</h3>
+                            <a href="#my-trips" class="link-view-all">View All <i class="fa-solid fa-chevron-right"></i></a>
+                        </div>
+                        <div class="trips-grid recent-trips-list" id="dashboard-recent-trips">
+                            <!-- Populated dynamically -->
+                            <div class="no-data-card glass">
+                                <p>No trips planned yet. Click "Plan New Trip" to get started!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended Destinations Section -->
+                    <div class="section-container">
+                        <h3><i class="fa-solid fa-star icon-margin"></i> Recommended Destinations</h3>
+                        <div class="recommendations-grid" id="dashboard-recommendations">
+                            <!-- Static high quality images paired with seeded cities -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. MY TRIPS (TRIP LIST) VIEW -->
+                <section id="view-my-trips" class="tab-view hidden">
+                    <div class="trips-filter-bar glass">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="trips-search-input" placeholder="Search your trips...">
+                        </div>
+                        <div class="filter-options">
+                            <select id="trips-sort-select" class="form-control-inline">
+                                <option value="date-desc">Dates: Newest First</option>
+                                <option value="date-asc">Dates: Oldest First</option>
+                                <option value="title">Alphabetical (A-Z)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="trips-grid" id="my-trips-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </section>
+
+                <!-- 3. DISCOVER / SEARCH VIEW -->
+                <section id="view-discover" class="tab-view hidden">
+                    <div class="search-interface-layout">
+                        <!-- Left Panel: Filters -->
+                        <div class="search-filters-sidebar glass">
+                            <h4><i class="fa-solid fa-filter"></i> Filters</h4>
+                            <div class="form-group mt-3">
+                                <label for="filter-region">Region</label>
+                                <select id="filter-region" class="form-control">
+                                    <option value="">All Regions</option>
+                                    <option value="Asia">Asia</option>
+                                    <option value="Europe">Europe</option>
+                                    <option value="North America">North America</option>
+                                    <option value="Oceania">Oceania</option>
+                                    <option value="Africa">Africa</option>
+                                    <option value="South America">South America</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-cost">Max Cost Index</label>
+                                <div class="range-slider-container">
+                                    <input type="range" id="filter-cost" min="0.5" max="1.5" step="0.1" value="1.5">
+                                    <span id="cost-slider-value">1.5x (All)</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-popularity">Min Popularity Score</label>
+                                <div class="range-slider-container">
+                                    <input type="range" id="filter-popularity" min="5.0" max="10.0" step="0.5" value="5.0">
+                                    <span id="popularity-slider-value">5.0+</span>
+                                </div>
+                            </div>
+                            <button id="btn-apply-filters" class="btn btn-accent btn-block mt-3">Apply Filters</button>
+                        </div>
+                        
+                        <!-- Right Panel: Cities List -->
+                        <div class="search-results-area">
+                            <div class="search-bar-row glass">
+                                <i class="fa-solid fa-magnifying-glass search-bar-icon"></i>
+                                <input type="text" id="city-search-input" placeholder="Search cities globally (e.g. Paris, Tokyo, Sydney)...">
+                            </div>
+                            <div class="cities-grid mt-3" id="cities-search-results">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. PROFILE & SETTINGS VIEW -->
+                <section id="view-profile" class="tab-view hidden">
+                    <div class="profile-layout">
+                        <div class="profile-sidebar glass">
+                            <div class="profile-avatar-editor">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile Photo" id="profile-avatar-big" class="profile-avatar-large">
+                                <div class="avatar-suggestions">
+                                    <span class="avatar-suggestion-title">Select avatar style:</span>
+                                    <div class="avatar-icons-row">
+                                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80" class="avatar-opt active" data-url="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80">
+                                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" class="avatar-opt" data-url="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80">
+                                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&q=80" class="avatar-opt" data-url="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80">
+                                        <img src="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=80&q=80" class="avatar-opt" data-url="https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=150&q=80">
+                                    </div>
+                                </div>
+                            </div>
+                            <h3 id="profile-name-title" class="text-center mt-3">John Doe</h3>
+                            <p id="profile-email-title" class="text-center text-muted">john@example.com</p>
+                        </div>
+                        
+                        <div class="profile-details-form glass">
+                            <h3>Account Settings</h3>
+                            <form id="profile-update-form" class="mt-3">
+                                <div class="form-group">
+                                    <label for="profile-name"><i class="fa-solid fa-user"></i> Display Name</label>
+                                    <input type="text" id="profile-name" required class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-language"><i class="fa-solid fa-language"></i> Language Preference</label>
+                                    <select id="profile-language" class="form-control">
+                                        <option value="en">English</option>
+                                        <option value="fr">French (Français)</option>
+                                        <option value="es">Spanish (Español)</option>
+                                        <option value="ja">Japanese (日本語)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+
+                            <hr class="profile-divider">
+
+                            <div class="saved-destinations-section">
+                                <h3><i class="fa-solid fa-bookmark text-accent"></i> Saved Destinations</h3>
+                                <div id="saved-destinations-list" class="saved-dest-tags mt-3">
+                                    <!-- Saved list tags -->
+                                    <span class="dest-tag">Tokyo, Japan <i class="fa-solid fa-circle-check"></i></span>
+                                    <span class="dest-tag">Paris, France <i class="fa-solid fa-circle-check"></i></span>
+                                    <span class="dest-tag">Rome, Italy <i class="fa-solid fa-circle-check"></i></span>
+                                </div>
+                            </div>
+
+                            <hr class="profile-divider">
+
+                            <div class="danger-zone">
+                                <h3>Danger Zone</h3>
+                                <p>Deleting your account is permanent. All your planned trips, itineraries, and custom budgets will be lost forever.</p>
+                                <button id="btn-delete-account" class="btn btn-danger mt-2"><i class="fa-solid fa-trash-can"></i> Delete My Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. ADMIN & PLATFORM ANALYTICS VIEW -->
+                <section id="view-admin" class="tab-view hidden">
+                    <div class="stats-grid" id="admin-stats-cards">
+                        <!-- Dynamic analytics stats -->
+                    </div>
+
+                    <div class="admin-grid-layout mt-4">
+                        <!-- Left Panel: Popular Destinations and Activities -->
+                        <div class="admin-panel-card glass">
+                            <h3><i class="fa-solid fa-fire text-accent"></i> Trending Destinations</h3>
+                            <div class="admin-chart-box mt-3" id="admin-trending-destinations">
+                                <!-- Trending Destination visits list -->
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: User Engagement and Activity Trends Chart -->
+                        <div class="admin-panel-card glass">
+                            <h3><i class="fa-solid fa-chart-line text-accent"></i> System Analytics</h3>
+                            <p class="text-muted text-small mb-3">Platform engagement breakdown by metrics:</p>
+                            <div class="admin-chart-container" id="admin-analytics-chart-container">
+                                <!-- SVG Bar/Engagement Chart -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. TRIP DETAILS & ITINERARY BUILDER VIEW (DYNAMIC) -->
+                <section id="view-trip-details" class="tab-view hidden">
+                    <!-- Trip Title Header glass card -->
+                    <div class="trip-details-header glass" id="trip-header-card">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <div class="trip-work-layout mt-4">
+                        <!-- Navigation sub-tabs inside Itinerary -->
+                        <div class="trip-sub-nav glass">
+                            <button class="sub-nav-btn active" data-subview="itinerary"><i class="fa-solid fa-list-check"></i> Itinerary Builder</button>
+                            <button class="sub-nav-btn" data-subview="calendar"><i class="fa-solid fa-calendar-days"></i> Calendar View</button>
+                            <button class="sub-nav-btn" data-subview="budget"><i class="fa-solid fa-receipt"></i> Budget & Costs</button>
+                        </div>
+
+                        <!-- Sub-View 1: Itinerary Builder -->
+                        <div id="trip-sub-itinerary" class="trip-sub-view active mt-3">
+                            <div class="itinerary-grid">
+                                <!-- Stops & Timeline Build area -->
+                                <div class="itinerary-main">
+                                    <div class="itinerary-controls glass mb-3">
+                                        <h4>Plan Stop Timeline</h4>
+                                        <button class="btn btn-accent btn-sm" id="btn-add-stop"><i class="fa-solid fa-plus"></i> Add Destination Stop</button>
+                                    </div>
+                                    <div class="stops-timeline" id="trip-stops-timeline">
+                                        <!-- Loaded dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- Side panel: Available Activities to Select/Filter -->
+                                <div class="activities-selector-panel glass" id="activities-picker-panel">
+                                    <div class="panel-header">
+                                        <h4>Add Activities</h4>
+                                        <p class="text-small text-muted" id="activity-panel-sub-label">Select a stop to view local tours</p>
+                                    </div>
+                                    <div class="activity-search-filters mt-3">
+                                        <div class="form-group mb-2">
+                                            <input type="text" id="activity-search-box" class="form-control-sm" placeholder="Search activities...">
+                                        </div>
+                                        <div class="form-row">
+                                            <select id="activity-type-filter" class="form-control-sm">
+                                                <option value="">All Types</option>
+                                                <option value="Sightseeing">Sightseeing</option>
+                                                <option value="Food">Food / Gastronomy</option>
+                                                <option value="Adventure">Adventure</option>
+                                                <option value="Culture">Culture</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="activities-scroll-list mt-3" id="activities-selection-list">
+                                        <!-- Populated when a Stop is selected -->
+                                        <div class="no-selection-indicator">
+                                            <i class="fa-regular fa-map-location-dot"></i>
+                                            <p>Click on any Stop Card to browse and schedule activities.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-View 2: Calendar View -->
+                        <div id="trip-sub-calendar" class="trip-sub-view hidden mt-3">
+                            <div class="calendar-layout-container glass">
+                                <div class="calendar-header-row">
+                                    <button class="btn btn-glass-circle" id="calendar-prev-month"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <h3 id="calendar-month-year">January 2024</h3>
+                                    <button class="btn btn-glass-circle" id="calendar-next-month"><i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                                <div class="calendar-grid">
+                                    <div class="calendar-day-header">Sun</div>
+                                    <div class="calendar-day-header">Mon</div>
+                                    <div class="calendar-day-header">Tue</div>
+                                    <div class="calendar-day-header">Wed</div>
+                                    <div class="calendar-day-header">Thu</div>
+                                    <div class="calendar-day-header">Fri</div>
+                                    <div class="calendar-day-header">Sat</div>
+                                    <!-- Days populated dynamically -->
+                                    <div class="calendar-days-container" id="calendar-days-grid"></div>
+                                </div>
+                                <div class="calendar-day-details mt-3" id="calendar-selected-day-details">
+                                    <h4>Select a highlighted day on the calendar to see details</h4>
+                                    <!-- Populated on date click -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-View 3: Budget & Cost Breakdown -->
+                        <div id="trip-sub-budget" class="trip-sub-view hidden mt-3">
+                            <div class="budget-dashboard-layout">
+                                <!-- Budget Overview Cards -->
+                                <div class="budget-stat-cards">
+                                    <div class="budget-stat-card glass">
+                                        <span class="lbl">Estimated Total Spend</span>
+                                        <span class="val text-accent" id="budget-total-spend">$0.00</span>
+                                    </div>
+                                    <div class="budget-stat-card glass">
+                                        <span class="lbl">Daily Spend Average</span>
+                                        <span class="val" id="budget-avg-daily">$0.00</span>
+                                    </div>
+                                    <div class="budget-stat-card glass">
+                                        <span class="lbl">Budget Limit (Per Day)</span>
+                                        <span class="val text-muted">$300.00</span>
+                                    </div>
+                                </div>
+
+                                <!-- Chart Breakdowns -->
+                                <div class="budget-charts-grid mt-3">
+                                    <div class="budget-chart-card glass">
+                                        <h4>Category Breakdown</h4>
+                                        <div class="pie-chart-wrapper" id="budget-pie-chart-container">
+                                            <!-- SVG Pie Chart will draw here -->
+                                        </div>
+                                        <div class="pie-chart-legend mt-3" id="budget-pie-legend">
+                                            <!-- Legend entries -->
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="budget-chart-card glass">
+                                        <h4>Daily Spending & Cost Limit Warnings</h4>
+                                        <p class="text-small text-muted mb-3">Daily cost threshold is set at $300. Red bars indicate over-budget days.</p>
+                                        <div class="bar-chart-container" id="budget-bar-chart-container">
+                                            <!-- SVG Bar chart will draw here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7. PUBLIC SHARE READ-ONLY VIEW -->
+                <section id="view-public-share" class="tab-view hidden">
+                    <div class="public-share-outer">
+                        <div class="public-share-header glass" id="public-trip-header">
+                            <!-- Dynamic title, dates, total cost, copy button -->
+                        </div>
+                        
+                        <div class="public-share-body mt-4">
+                            <div class="public-stops-list" id="public-stops-timeline">
+                                <!-- Dynamic day-by-day read only timeline -->
+                            </div>
+                            
+                            <div class="public-side-budget glass" id="public-budget-panel">
+                                <!-- Budget breakdown stats read-only -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals Layer -->
+    <!-- 1. Create/Edit Trip Modal -->
+    <div id="modal-trip" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content glass animate-slide-up">
+            <div class="modal-header">
+                <h3 id="trip-modal-title">Plan a New Adventure</h3>
+                <button class="btn-close" id="btn-close-trip-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="trip-form">
+                <input type="hidden" id="trip-id-field">
+                <div class="form-group">
+                    <label for="trip-title-input">Trip Name / Title</label>
+                    <input type="text" id="trip-title-input" required placeholder="e.g. Summer Escape to Tokyo & Kyoto">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="trip-start-date">Start Date</label>
+                        <input type="date" id="trip-start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="trip-end-date">End Date</label>
+                        <input type="date" id="trip-end-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="trip-desc-input">Description / Notes</label>
+                    <textarea id="trip-desc-input" rows="3" placeholder="Tell us about your trip goals, packing list, or travel inspiration..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="trip-cover-input">Cover Image URL (Optional)</label>
+                    <input type="url" id="trip-cover-input" placeholder="https://images.unsplash.com/photo-...">
+                    <div class="cover-quick-suggest mt-2">
+                        <span class="text-small text-muted">Or choose standard:</span>
+                        <div class="cover-suggest-imgs">
+                            <span class="suggest-chip active" data-url="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80">Adventure</span>
+                            <span class="suggest-chip" data-url="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80">Beach</span>
+                            <span class="suggest-chip" data-url="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80">Road Trip</span>
+                            <span class="suggest-chip" data-url="https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=600&q=80">Nature</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-trip-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-trip-modal">Save Trip</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Add Stop Modal -->
+    <div id="modal-stop" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content glass animate-slide-up">
+            <div class="modal-header">
+                <h3>Add Stop Destination</h3>
+                <button class="btn-close" id="btn-close-stop-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="stop-form">
+                <div class="form-group">
+                    <label for="stop-city-select">Select City</label>
+                    <select id="stop-city-select" required class="form-control">
+                        <!-- Populated dynamically with seeded cities -->
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="stop-arrival-date">Arrival Date</label>
+                        <input type="date" id="stop-arrival-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stop-departure-date">Departure Date</label>
+                        <input type="date" id="stop-departure-date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-stop-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Stop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Add Custom Activity / Itinerary Item Modal -->
+    <div id="modal-custom-activity" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content glass animate-slide-up">
+            <div class="modal-header">
+                <h3>Schedule Custom Activity / Event</h3>
+                <button class="btn-close" id="btn-close-custom-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="custom-activity-form">
+                <input type="hidden" id="custom-stop-id">
+                <div class="form-group">
+                    <label for="custom-name-input">Activity / Event Name</label>
+                    <input type="text" id="custom-name-input" required placeholder="e.g. Flight to Tokyo, Dinner at Michelin Restaurant">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="custom-time-input">Scheduled Time & Date</label>
+                        <input type="datetime-local" id="custom-time-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-cost-input">Estimated Cost (USD)</label>
+                        <input type="number" id="custom-cost-input" min="0" step="0.01" value="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-custom-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Quick View Activity Modal -->
+    <div id="modal-activity-detail" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content glass animate-slide-up modal-narrow">
+            <div class="modal-header">
+                <h3 id="activity-detail-title">Activity Title</h3>
+                <button class="btn-close" id="btn-close-detail-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body-detail">
+                <div class="activity-detail-meta">
+                    <span class="badge" id="activity-detail-type">Food</span>
+                    <span class="meta-item"><i class="fa-regular fa-clock"></i> <span id="activity-detail-duration">120 mins</span></span>
+                    <span class="meta-item"><i class="fa-solid fa-tag"></i> <span id="activity-detail-cost">$50.00</span></span>
+                </div>
+                <p id="activity-detail-description" class="mt-3">Activity detailed description goes here...</p>
+                <div class="form-group mt-3">
+                    <label for="activity-schedule-time">Select Scheduled Date & Time</label>
+                    <input type="datetime-local" id="activity-schedule-time" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="activity-custom-cost">Override Cost (Optional)</label>
+                    <input type="number" id="activity-custom-cost" min="0" step="0.01" placeholder="Leave blank to use default cost" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-detail-modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-add-activity-confirmed">Schedule Activity</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Front-end Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

@@ -41,6 +41,13 @@ def get_trips_by_user(db: Session = Depends(get_db), current_user: models.User =
         })
     return summary
 
+@router.get("/{trip_id}", response_model=schemas.TripResponse)
+def get_trip(trip_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    trip = db.query(models.Trip).filter(models.Trip.id == trip_id, models.Trip.user_id == current_user.id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return trip
+
 @router.put("/{trip_id}", response_model=schemas.TripResponse)
 def update_trip(trip_id: str, trip_data: schemas.TripUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     trip = db.query(models.Trip).filter(models.Trip.id == trip_id, models.Trip.user_id == current_user.id).first()

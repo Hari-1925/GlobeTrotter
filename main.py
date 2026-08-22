@@ -20,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.staticfiles import StaticFiles
+
 # Include routers
 app.include_router(auth.router)
 app.include_router(users.router)
@@ -30,6 +32,5 @@ app.include_router(budget.router)
 app.include_router(sharing.router)
 app.include_router(admin.router)
 
-@app.get("/")
-def root():
-    return {"message": "Welcome to GlobeTrotter API!"}
+# Serve static files
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
